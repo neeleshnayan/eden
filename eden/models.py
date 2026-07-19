@@ -69,4 +69,12 @@ def chat(model_spec: str, system: str, messages: list[dict], *, max_tokens: int 
     if provider == "together":
         return _openai_chat(model, system, messages, max_tokens, temperature,
                             base_url="https://api.together.xyz/v1", api_key_env="TOGETHER_API_KEY")
+    if provider == "local":
+        # A local OpenAI-compatible server (vLLM, llama.cpp, LM Studio, ollama).
+        # vLLM:  vllm serve Qwen/Qwen2.5-7B-Instruct --port 8000
+        # then:  local:Qwen/Qwen2.5-7B-Instruct
+        base = os.environ.get("LOCAL_BASE_URL", "http://localhost:8000/v1")
+        os.environ.setdefault("LOCAL_API_KEY", "not-needed")
+        return _openai_chat(model, system, messages, max_tokens, temperature,
+                            base_url=base, api_key_env="LOCAL_API_KEY")
     raise ValueError(f"unknown provider in model spec: {model_spec!r}")
