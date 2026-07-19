@@ -1,0 +1,22 @@
+services:
+  vllm:
+    image: vllm/vllm-openai:latest
+    container_name: eden-vllm
+    ports:
+      - "8000:8000"
+    volumes:
+      - huggingface-cache:/root/.cache/huggingface
+    environment:
+      - HUGGING_FACE_HUB_TOKEN=${HUGGING_FACE_HUB_TOKEN:-}
+    ipc: host
+    command: ["--model", "${VLLM_MODEL:-Qwen/Qwen2.5-7B-Instruct}"]
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+volumes:
+  huggingface-cache:
