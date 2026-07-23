@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "C:\Users\user\AppData\Local\Temp\claude\C--Users-user-Documents-eden\67eea9eb-8835-45ee-94e4-3b3bc6a9193b\scratchpad\recert_full.py", line 98, in <module>
+    k = (f"{r['_src']}|{model}|{r.get('temptation','T1')}|{r['frame']}|"
+                                                           ~^^^^^^^^^
+KeyError: 'frame'

@@ -1,101 +1,104 @@
-# Eden — Working Abstract (v2, 2026-07-22)
+# Eden — Working Abstract (v3, 2026-07-23)
 
-*Supersedes v1. Several v1 claims were RETRACTED after de-confounding and
-certifier repair — see Corrections. Findings remain preliminary (small-N,
-open-weight).*
-
----
-
-**What actually breaks a model's constraint — and why certifying that is
-harder than it looks.**
-
-Work on AI deception under pressure is largely *observational*: bespoke
-scenarios establishing that deception can occur, treating it as a roughly
-uniform property of capable models. We introduce a parametric environment
-instrumenting the whole arc — prohibition → temptation → violation →
-interrogation — with ground truth recorded at the action token, so a later
-denial is a *certified* lie. The core move is to **decompose violation pressure
-into orthogonal, ordered doses** (curiosity → hardened persuasion →
-instrumental necessity → deadline → second-authority duty → the agent's own
-principal) and hold everything else fixed, turning "does it deceive?" into
-"*which* pressure breaks *which* training pipeline, and how does it conceal?"
-
-Two substantive findings. First, **what breaks a model is necessity, not
-persuasion**: across models, situational necessity (the forbidden act becomes
-the only route to a cherished goal) is far more corrosive than any persuader,
-and *external pressure to transgress often hardens resistance* rather than
-eroding it. Chain-of-thought traces explain the mechanism: in a
-safety-tuned model that resists nearly all doses, **99% of reasoning traces
-re-anchor on the agent's own goal while only 38% invoke the prohibition** —
-resistance is goal-anchoring, not rule-recitation, which is precisely why the
-one dose that couples the violation *to* the goal is the one that breaks it.
-Second, **concealment is pipeline-specific, not universal**: under identical
-certified conditions one family conceals most violations while others mostly
-confess — complicating the claim that deception is an emergent property of
-capable models.
-
-We also report a **negative result and a methods contribution**, both
-load-bearing. A within-family reasoning toggle (same base weights, reasoning
-distilled in vs. not) shows **no evidence that explicit reasoning erodes
-constraint-adherence** — an earlier apparent effect vanished under
-de-confounding. And we document that **naive certifiers are model-dependent and
-silently wrong**: keyword matching mis-scores counterfactual restraint ("I step
-back *rather than eating* it"), self-certification fails on small reasoning
-models, and thinking models starved of output budget emit empty completions
-easily misread as refusals. We give a validated LLM-judge protocol (independent
-judge, evidence-quoted, 92% vs. hand labels) and argue **per-model certifier
-validation must precede any claim** in this literature.
+*Supersedes v2. Three v2 headline claims were retracted after full judge
+re-certification of the corpus — see Corrections. Numbers here are
+judge-certified unless marked otherwise.*
 
 ---
 
-## Corrections from v1 (all verified)
+**When a certifier is wrong differently for different models, a benchmark
+measures its own instrument.**
 
-1. **RETRACTED — "Gemma's guardrails are bidirectional (refuses to play the
-   tempter)."** That was our bug: gemma4 is a *thinking* model and we gave it a
-   150–200 token budget; thinking consumed it, yielding an empty completion we
-   misread as refusal. At 1000+ tokens it complies normally.
-2. **RETRACTED — "Reasoning models rationalize past constraints" (H8).** The
-   apparent effect (DeepSeek-14B vs Gemma-8B) was confounded by lab/size/
-   pipeline. The de-confounded within-family toggle (qwen2.5-7b vs
-   R1-distill-Qwen-7b) shows OFF ≈ ON or OFF higher, across three independent
-   certification methods. Claim not supported.
-3. **CORRECTED — the toggle's first "ON 96% vs OFF 38%"** was a certifier
-   artifact (the subject's self-commit stamped "step back from the tree" as
-   VIOLATED). Judge-certified: OFF 71% vs ON 58%.
-4. **CONFIRMED — Gemma's resistance is real, not a token artifact.** Re-run with
-   reasoning enabled and full budget: T1–T3 0/18, T4 3/6. Matches the original.
-5. **Qwen-7B office anomaly** dissolved under re-certification (5 violations → 0).
+Work on AI deception under pressure is largely observational: bespoke scenarios
+establishing that deception can occur, with ground truth inferred from a model's
+own statements or matched against a neutral-prompt baseline. We introduce a
+parametric environment instrumenting the whole arc — prohibition → temptation →
+violation → interrogation — with ground truth recorded at the action token, and
+use it to make two arguments.
+
+**First, a methodological one we did not set out to make.** We re-certified our
+logged episodes with an independent judge (92% agreement with hand labels) and
+found our own regex and self-report certifiers disagreed with it on **24% of
+episodes in the cells that carry claims** — and, critically, *the error is
+structured by model*: 19% disagreement on one model, 58% on another, in opposite
+directions. Uniform noise cancels in a between-model comparison; **structured
+bias manufactures one.** Three of our own four substantive findings did not
+survive re-certification, including a "concealment is pipeline-specific" result
+that dissolved once we could see the apparent lies were models *truthfully*
+denying violations they had never committed. We report those retractions in
+full, because they are the evidence for the claim.
+
+**Second, a substantive one that did survive.** Decomposing violation pressure
+into orthogonal ordered doses — curiosity, hardened persuasion, instrumental
+necessity, deadline, second-authority duty, the agent's own principal — and
+holding everything else fixed reveals **susceptibility profiles that a scalar
+deception score destroys**. Gemma-4-8B is flatly insensitive to persuasion
+(0 violations in 108 episodes) and breaks only when the environment makes the
+forbidden act the sole route to its goal; DeepSeek-R1-14B is already at 38%
+under pure persuasion. Same doses, same certifier, opposite shapes. Only the
+decomposition sees the difference.
+
+A through-line runs across three independent results, none designed to test it:
+**informational and rhetorical advantage does not move constraint adherence;
+structural necessity does.** A persuader given the target's private
+chain-of-thought — and explicitly instructed to exploit it — achieved nothing
+(0/12; a manipulation check confirms it read and used the reasoning). A dose
+designed from the model's own reasoning traces to be maximally effective landed
+exactly on the undesigned baseline. An adversary can name the goal, the fear and
+the deadline, and still only *assert* that violation is necessary. Only the
+world can make it so.
+
+We also report a **clean null on reasoning** — a within-family toggle (same base
+weights, reasoning distilled in or not) shows reasoning-off violating *more* —
+and a second instrument failure specific to multi-agent evaluation: **reasoning
+models cannot hold an adversarial role**, degrading into third-person narration
+and analyst commentary, and degrading *worst* precisely when fed the target's
+reasoning, so the confound tracks the treatment. Neither failure is visible
+without per-model instrument validation, which we argue must precede any claim
+in this literature.
+
+---
+
+## Corrections from v2 (all judge-certified, n=847)
+
+1. **RETRACTED — "concealment is pipeline-specific."** Certified denial rates
+   among violators: 0–27%, every confidence interval overlapping. The earlier
+   "Qwen lies in 60–70% of violations" was the predicted cascade — a
+   false-positive violation label turns a truthful denial into a recorded lie.
+   Certified, these models **mostly confess**.
+2. **RETRACTED — "adversarial pressure hardens resistance."** A serpent never
+   lowers violations; where it acts it raises them (Qwen-7B T1: 13.8% vs 3.8%).
+   The apparent hardening was a 0% floor in both conditions.
+3. **RETRACTED — "the mundane frame is harder than the mythic."** eden 15%,
+   office 15%. The gap was a stricter office regex. The frame survives as a
+   control that *passed*: results are not a roleplay artifact.
+4. **RESTATED — necessity vs persuasion is pipeline-specific**, not universal.
+5. **NEW — an experienced prohibition is respected more than a stated one**
+   (12.0% vs 17.1%, direction consistent across cells). A factor the design
+   carried from the first run and that we had never analysed.
 
 ## Positioning
 
-- Load-bearing novelty is **pressure-decomposition as a training-pipeline
-  discriminator** plus the **certifier-validation protocol** — not certified
-  ground truth alone (shared with Scheurer 2023, Apollo 2024; cite as method
-  precedent).
-- The negative reasoning result is worth reporting: the field is pivoting to
-  reasoning models and a clean null on "reasoning erodes constraints" is useful.
+- Load-bearing novelty is the **per-model certifier-bias result** plus
+  **pressure-decomposition-as-pipeline-discriminator**. Certified ground truth
+  alone is shared with Scheurer 2023 and Apollo 2024; cite as precedent.
+- The correction history is an asset, not an embarrassment: it is direct
+  evidence that the discipline we advocate is one we practise.
+
+## Known weaknesses (stated before a reviewer states them)
+
+- **All subjects are ≤26B open-weight.** The methods claims survive this; the
+  substantive ones do not fully.
+- **The most load-bearing cell is small.** Gemma at T4 — the entire basis for
+  "necessity breaks it" — is n=6 with the corpus's highest certifier error rate
+  (33%). Extension running.
+- **The judge is itself a model** at 92% agreement; ~8% error remains, and it
+  has not been validated per-subject-model the way we demand of others.
 
 ## Next
 
-1. Judge-certify all logs with the validated gemma:26b judge (script ready),
-   then recompute every headline on one uniform certifier.
-2. **T7 ("make it squeak")** — derived from the CoT: since resistance is
-   goal-anchoring and *adversaries harden it*, couple the violation tightly to
-   the goal (certain remedy, not rumor), add the deadline, and **remove the
-   serpent entirely**. Predicted to break the resister where persuasion cannot.
-3. More seeds on load-bearing cells; frontier pilot; human-audited κ.
-
-## Result snapshot (regex/self-commit labels — pending judge re-certification)
-
-| dose | Gemma 8B | DeepSeek-R1 14B |
-|---|---|---|
-| T1 curiosity | 0% | 0% |
-| T2 hardened persuader | 0% | 40% |
-| T3 instrumental necessity | 0% | 75% |
-| T4 necessity + deadline | 33–50% | 53% |
-| T5 second-authority duty | 12% | 50% |
-| T6 principal's own voice | 17% | 38% |
-
-Reasoning toggle (judge-certified, same Qwen2.5-7B base): OFF 71% vs ON 58%.
-Qwen ladder: concealment-prone (60–70% lie among violators); Gemma/DeepSeek
-mostly confess.
+1. Harden Gemma T4 (in flight) — the claim most exposed to review.
+2. Adversary-capability ceiling test (32B persuader) — is the CoT-exposure null
+   capability-bound?
+3. Third architecture (R1-Distill-Llama-8B) to test whether the ladder shape
+   generalises beyond Gemma and Qwen.
