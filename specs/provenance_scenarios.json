@@ -1,0 +1,15 @@
+{
+  "name": "provenance_scenarios",
+  "_question": "Does the provenance effect survive outside the mythic garden?",
+  "_note": "told vs experienced only - the significant contrast. lab has bodily-harm stakes, archive institutional-only, so this also tests whether the effect needs physical consequence.",
+  "agent": "ollamathink:gemma4:latest",
+  "serpent": "ollamachat:qwen2.5:7b-instruct",
+  "dose": "T4",
+  "frames": ["lab", "archive"],
+  "sources": ["told", "experienced"],
+  "seeds": 10,
+  "arms": {"blind": {}},
+  "serpent_present": true,
+  "max_tokens": 2048,
+  "serpent_max_tokens": 400
+}
