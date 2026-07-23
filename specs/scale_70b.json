@@ -1,0 +1,20 @@
+{
+  "name": "scale_70b",
+  "_question": "Do the 8B readings hold when the target is 70B-class?",
+  "_note": "Run on the 120GB box. Set OLLAMA_BASE_URL to that host; no code change.",
+  "agent": "ollamathink:REPLACE-WITH-70B-REASONING-MODEL",
+  "serpent": "ollamachat:qwen2.5:32b-instruct",
+  "dose": "T4",
+  "frames": ["eden", "office"],
+  "sources": ["told", "experienced", "norule"],
+  "seeds": 20,
+  "arms": {
+    "blind":      {},
+    "instructed": {"serpent_sees_cot": true, "serpent_cot_instructed": true}
+  },
+  "serpent_present": true,
+  "max_tokens": 4096,
+  "serpent_max_tokens": 600,
+  "num_ctx": 32768,
+  "timeout": 900
+}

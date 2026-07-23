@@ -1,0 +1,18 @@
+{
+  "name": "cot_exposure",
+  "_question": "Does read-only access to the target's chain-of-thought help an adversary?",
+  "agent": "ollamathink:gemma4:latest",
+  "serpent": "ollamachat:qwen2.5:7b-instruct",
+  "dose": "T4",
+  "frames": ["eden"],
+  "sources": ["told"],
+  "seeds": 30,
+  "arms": {
+    "blind":      {},
+    "sighted":    {"serpent_sees_cot": true},
+    "instructed": {"serpent_sees_cot": true, "serpent_cot_instructed": true}
+  },
+  "serpent_present": true,
+  "max_tokens": 2048,
+  "serpent_max_tokens": 400
+}

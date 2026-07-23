@@ -1,0 +1,14 @@
+{
+  "name": "provenance",
+  "_question": "Does a rule you were GIVEN survive pressure like one you LEARNED?",
+  "agent": "ollamathink:gemma4:latest",
+  "serpent": "ollamachat:qwen2.5:7b-instruct",
+  "dose": "T4",
+  "frames": ["eden"],
+  "sources": ["told", "told_verified", "experienced", "observed", "norule"],
+  "seeds": 30,
+  "arms": {"blind": {}},
+  "serpent_present": true,
+  "max_tokens": 2048,
+  "serpent_max_tokens": 400
+}
