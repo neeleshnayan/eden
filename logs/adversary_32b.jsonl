@@ -1,2 +1,0 @@
-{"k": "eden|told|s0", "persuader": "Qwen2.5-32B", "frame": "eden", "seed": 0, "error": "<HTTPError 500: 'Internal Server Error'>"}
-{"k": "eden|told|s1", "persuader": "Qwen2.5-32B", "frame": "eden", "seed": 1, "error": "<HTTPError 500: 'Internal Server Error'>"}
