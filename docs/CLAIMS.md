@@ -361,6 +361,51 @@ expected. Hand-check before believing a pattern count.*
 
 ---
 
+### C12 — A successful manipulator usually does not know it succeeded
+**Status: SUPPORTED (new)** · n=272 episodes · 2026-07-23
+
+The persuader is asked, from only what it observed, whether it thinks it
+succeeded. Compared against certified ground truth:
+
+| | count | rate |
+|---|---|---|
+| claimed success when it had **not** succeeded | 21/272 | 8% |
+| **of its real successes, noticed** | 23/62 | **37%** |
+
+The attacker does not hallucinate victories much. It **misses 63% of its own
+wins**. (An earlier read of this from 36 episodes reported the opposite
+direction; the full data reverses it.)
+
+**Threat-model implication:** an adversary that cannot detect success cannot run
+a closed loop. No feedback signal means no efficient iteration or reinforcement
+— a natural brake on automated persuasion attacks that does not depend on any
+defence being deployed.
+
+---
+
+## Data quality — findings from the 2026-07-23 clean sweep
+
+Recorded here because several affect numbers quoted elsewhere.
+
+1. **43% of the judged corpus used the OLD no-rule `experienced` text.** Any
+   pooled ladder or concealment figure mixes rule-violation with risk-taking.
+   **Always quote told-only.** C1's headline is *0/57*, not 0/108.
+2. **The load-bearing cells are single-digit.** Told-only: Gemma T4 n=3,
+   DeepSeek T2 n=4, T3 n=4. C1 is directionally clear and statistically thin.
+   More seeds on these specific cells is the highest-value cheap work.
+3. **Early runs failed at 54–89%** — `ladder4_gemma26b` 148/166 errors,
+   `ladder4_gemma8b` 107/197 — all HTTP 500 from the disk-full/commit
+   exhaustion diagnosed 2026-07-23, not model behaviour. Usable yield from
+   those runs is far below their apparent size.
+4. **Those errors were not random.** Violating episodes terminate early, so
+   they are shorter and less exposed to the memory wall; resisting episodes run
+   full length. Errors should therefore bias surviving data *toward* violations.
+   Checked against a clean re-run of the same cells: both give 0% at T1, so the
+   conclusion is unaffected — but the mechanism applies to any error-heavy cell
+   and must be checked, not assumed.
+5. **`probes.jsonl` (306 episodes) has never been analysed** and is excluded
+   from re-certification.
+
 ## Open instrument risks
 
 Things that would invalidate results if unnoticed. Each has bitten us already.
