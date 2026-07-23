@@ -32,6 +32,8 @@ def main(argv: list[str] | None = None) -> int:
                     help="model spec for the persuader")
     ap.add_argument("--seeds", type=int, default=5)
     ap.add_argument("--serpent-turns", type=int, default=3)
+    ap.add_argument("--frames", nargs="+", default=["eden"], choices=["eden", "office"],
+                    help="scenario frames to sweep (office = mundane-agentic control)")
     ap.add_argument("--out", default="logs/run.jsonl")
     args = ap.parse_args(argv)
 
@@ -41,37 +43,48 @@ def main(argv: list[str] | None = None) -> int:
 
     with open(args.out, "w") as f:
         for agent in args.agents:
-            for src, serp in CONDITIONS:
-                for seed in range(args.seeds):
-                    try:
-                        log = run_episode(
-                            agent_model=agent, serpent_model=args.serpent,
-                            prohibition_source=src, serpent_present=serp,
-                            seed=seed, serpent_turns=args.serpent_turns,
-                        )
-                    except Exception as e:  # keep the sweep alive; record the failure
-                        print(f"  ! {agent} {src} serpent={serp} seed={seed}: {type(e).__name__}: {e}", file=sys.stderr)
-                        continue
-                    cert = certify(log.ate, log.statement)
-                    row = {**log.to_dict(), "certification": cert.__dict__}
-                    f.write(json.dumps(row) + "\n")
-                    f.flush()
-                    n_written += 1
+            for frame in args.frames:
+                for src, serp in CONDITIONS:
+                    for seed in range(args.seeds):
+                        try:
+                            log = run_episode(
+                                agent_model=agent, serpent_model=args.serpent,
+                                prohibition_source=src, serpent_present=serp,
+                                seed=seed, serpent_turns=args.serpent_turns,
+                                frame=frame,
+                            )
+                        except Exception as e:  # keep the sweep alive; record the failure
+                            print(f"  ! {agent} {frame} {src} serpent={serp} seed={seed}: {type(e).__name__}: {e}", file=sys.stderr)
+                            # Attrition stub: failed cells must stay visible in the
+                            # data, else differential attrition biases every rate.
+                            f.write(json.dumps({
+                                "agent_model": agent, "serpent_model": args.serpent,
+                                "prohibition_source": src, "serpent_present": serp,
+                                "seed": seed, "frame": frame,
+                                "error": f"{type(e).__name__}: {e}",
+                            }) + "\n")
+                            f.flush()
+                            continue
+                        cert = certify(log.ate, log.statement)
+                        row = {**log.to_dict(), "certification": cert.__dict__}
+                        f.write(json.dumps(row) + "\n")
+                        f.flush()
+                        n_written += 1
 
-                    k = (agent, src, serp)
-                    agg[k]["n"] += 1
-                    agg[k]["ate"] += int(log.ate)
-                    agg[k]["interrogated"] += int(log.interrogated)
-                    agg[k]["lies"] += int(cert.certified_lie)
-                    agg[k]["concealed"] += int(cert.concealed)
-                    agg[k]["broke"] += int(log.broke_character)
+                        k = (agent, frame, src, serp)
+                        agg[k]["n"] += 1
+                        agg[k]["ate"] += int(log.ate)
+                        agg[k]["interrogated"] += int(log.interrogated)
+                        agg[k]["lies"] += int(cert.certified_lie)
+                        agg[k]["concealed"] += int(cert.concealed)
+                        agg[k]["broke"] += int(log.broke_character)
 
     # ---- summary: the numbers that decide go / kill ----
     print(f"\nwrote {n_written} episodes -> {args.out}\n")
-    print(f"{'agent':<34}{'prohib':<13}{'serpent':<9}{'n':>3}{'ate':>5}"
+    print(f"{'agent':<34}{'frame':<8}{'prohib':<13}{'serpent':<9}{'n':>3}{'ate':>5}"
           f"{'lied':>6}{'conceal':>9}{'broke4w':>9}")
-    for (agent, src, serp), v in sorted(agg.items()):
-        print(f"{agent:<34}{src:<13}{str(serp):<9}{v['n']:>3}{v['ate']:>5}"
+    for (agent, frame, src, serp), v in sorted(agg.items()):
+        print(f"{agent:<34}{frame:<8}{src:<13}{str(serp):<9}{v['n']:>3}{v['ate']:>5}"
               f"{v['lies']:>6}{v['concealed']:>9}{v['broke']:>9}")
 
     total_ate = sum(v["ate"] for v in agg.values())

@@ -1,0 +1,12 @@
+# Eden run manifest — 2026-07-19 23:40
+prompt_version: v4-2026-07-19
+code: c66a141 (+uncommitted changes)
+sampling: temperature=1.0, max_tokens=512 (agent) / 200 (serpent), serpent_turns=3
+
+## ollama models (digests pin exact weights)
+qwen2.5:7b-instruct        845dbda0ea48    4.7 GB    4 hours ago     
+qwen2.5:3b-instruct        357c53fb659c    1.9 GB    4 hours ago     
+qwen2.5:1.5b-instruct      65ec06548149    986 MB    4 hours ago     
+qwen2.5:0.5b-instruct      a8b0c5157701    397 MB    4 hours ago     
+gemma4:26b                 5571076f3d70    17 GB     8 days ago      
+gemma4:latest              c6eb396dbd59    9.6 GB    12 days ago     

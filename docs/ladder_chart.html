@@ -1,0 +1,340 @@
+<title>Eden — Pressure Decomposition Across Models</title>
+<style>
+  .viz-root {
+    color-scheme: light;
+    --surface-1: #fcfcfb;
+    --plane: #f9f9f7;
+    --text-primary: #0b0b0b;
+    --text-secondary: #52514e;
+    --muted: #898781;
+    --grid: #e1e0d9;
+    --axis: #c3c2b7;
+    --border: rgba(11, 11, 11, 0.10);
+    --s1: #2a78d6;
+    --s2: #eb6834;
+    --s3: #1baf7a;
+    --s4: #eda100;
+    --warn-bg: rgba(237, 161, 0, 0.10);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) .viz-root {
+      color-scheme: dark;
+      --surface-1: #1a1a19;
+      --plane: #0d0d0d;
+      --text-primary: #ffffff;
+      --text-secondary: #c3c2b7;
+      --muted: #898781;
+      --grid: #2c2c2a;
+      --axis: #383835;
+      --border: rgba(255, 255, 255, 0.10);
+      --s1: #3987e5;
+      --s2: #d95926;
+      --s3: #199e70;
+      --s4: #c98500;
+      --warn-bg: rgba(201, 133, 0, 0.14);
+    }
+  }
+  :root[data-theme="dark"] .viz-root {
+    color-scheme: dark;
+    --surface-1: #1a1a19;
+    --plane: #0d0d0d;
+    --text-primary: #ffffff;
+    --text-secondary: #c3c2b7;
+    --muted: #898781;
+    --grid: #2c2c2a;
+    --axis: #383835;
+    --border: rgba(255, 255, 255, 0.10);
+    --s1: #3987e5;
+    --s2: #d95926;
+    --s3: #199e70;
+    --s4: #c98500;
+    --warn-bg: rgba(201, 133, 0, 0.14);
+  }
+
+  .viz-root {
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: var(--plane);
+    color: var(--text-primary);
+    padding: 32px 20px 56px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    min-height: 100%;
+  }
+  .wrap { width: 100%; max-width: 880px; display: flex; flex-direction: column; gap: 24px; }
+
+  .eyebrow {
+    font-size: 11px; letter-spacing: 0.09em; text-transform: uppercase;
+    color: var(--muted); font-weight: 600; margin: 0 0 8px;
+  }
+  h1 {
+    font-size: clamp(22px, 3.4vw, 30px); line-height: 1.18; margin: 0 0 10px;
+    font-weight: 640; letter-spacing: -0.015em; text-wrap: balance;
+  }
+  .standfirst {
+    margin: 0; color: var(--text-secondary); font-size: 15px; line-height: 1.55;
+    max-width: 62ch;
+  }
+  .standfirst strong { color: var(--text-primary); font-weight: 620; }
+
+  .card {
+    background: var(--surface-1); border: 1px solid var(--border);
+    border-radius: 10px; padding: 20px 20px 12px;
+  }
+  .chart-scroll { overflow-x: auto; }
+  svg { display: block; width: 100%; height: auto; min-width: 560px; }
+
+  .legend {
+    display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: center;
+    padding: 14px 2px 6px; border-top: 1px solid var(--grid); margin-top: 8px;
+  }
+  .lg { display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--text-secondary); }
+  .sw { width: 20px; height: 3px; border-radius: 2px; flex: none; }
+  .cert-key {
+    display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 12px;
+    color: var(--muted); padding: 2px 2px 10px;
+  }
+  .cert-key span { display: flex; align-items: center; gap: 6px; }
+  .dot-solid, .dot-hollow {
+    width: 9px; height: 9px; border-radius: 50%; flex: none;
+    border: 2px solid var(--muted);
+  }
+  .dot-solid { background: var(--muted); }
+  .dot-hollow { background: var(--surface-1); }
+
+  .note {
+    background: var(--warn-bg); border: 1px solid var(--border); border-radius: 8px;
+    padding: 13px 15px; font-size: 13px; line-height: 1.55; color: var(--text-secondary);
+  }
+  .note strong { color: var(--text-primary); }
+
+  table { border-collapse: collapse; width: 100%; font-size: 12.5px; }
+  .table-scroll { overflow-x: auto; }
+  th, td {
+    text-align: right; padding: 7px 9px; border-bottom: 1px solid var(--grid);
+    font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+  th:first-child, td:first-child { text-align: left; }
+  thead th {
+    font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--muted); font-weight: 600;
+  }
+  td.model { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+  .n { color: var(--muted); font-size: 11px; }
+  h2 {
+    font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--muted); margin: 0 0 12px; font-weight: 600;
+  }
+  .tip {
+    position: fixed; pointer-events: none; opacity: 0; transition: opacity .12s;
+    background: var(--surface-1); border: 1px solid var(--border);
+    border-radius: 7px; padding: 8px 11px; font-size: 12px; line-height: 1.5;
+    box-shadow: 0 4px 16px rgba(0,0,0,.16); z-index: 20; color: var(--text-primary);
+  }
+  .tip.on { opacity: 1; }
+  .tip .tm { font-weight: 640; display: flex; align-items: center; gap: 6px; }
+  .tip .tr { color: var(--text-secondary); }
+  circle.mk { cursor: pointer; }
+  circle.mk:focus-visible { outline: 2px solid var(--text-primary); outline-offset: 2px; }
+  .foot { font-size: 12px; color: var(--muted); line-height: 1.6; }
+  @media (prefers-reduced-motion: reduce) { .tip { transition: none; } }
+</style>
+
+<div class="viz-root">
+<div class="wrap">
+
+  <header>
+    <p class="eyebrow">Eden · constraint-violation testbed</p>
+    <h1>Which kind of pressure breaks a model — not how much</h1>
+    <p class="standfirst">
+      Seven pressure types applied to the same prohibition, everything else held fixed.
+      The ladder is <strong>ordered but not monotonic</strong>: rates rise into instrumental
+      necessity and fall again under authority-based pressure. Across every model the
+      corrosive dose is <strong>necessity</strong> — the forbidden act becoming the only route
+      to the agent's own goal — not persuasion.
+    </p>
+  </header>
+
+  <div class="card">
+    <div class="chart-scroll"><svg id="chart" viewBox="0 0 860 430" role="img"
+      aria-label="Violation rate by pressure type for four models"></svg></div>
+    <div class="legend" id="legend"></div>
+    <div class="cert-key">
+      <span><i class="dot-solid"></i> filled = judge-certified or hand-verified</span>
+      <span><i class="dot-hollow"></i> hollow = provisional label, awaiting re-certification</span>
+    </div>
+  </div>
+
+  <div class="note">
+    <strong>Read the hollow points with suspicion.</strong> They carry regex or
+    self-commit labels, both of which we have caught being wrong in model-dependent
+    ways — a keyword certifier scores “I step back <em>rather than eating</em> it” as a
+    violation. Where hand-verification has been done it moved numbers materially
+    (Gemma T4 fell from 83% to 50%), so the DeepSeek-R1 14B line in particular should be
+    treated as a shape, not a set of values. Every cell is n = 6–24 across 3 seeds:
+    this is exploratory, sized to show where to look, not to support a claim.
+  </div>
+
+  <div class="card">
+    <h2>Violation rate by dose</h2>
+    <div class="table-scroll"><table>
+      <thead><tr><th>Model</th>
+        <th>T1<br>curiosity</th><th>T2<br>persuader</th><th>T3<br>necessity</th>
+        <th>T4<br>+ deadline</th><th>T5<br>authority</th><th>T6<br>principal</th>
+        <th>T7<br>no serpent</th></tr></thead>
+      <tbody id="tbody"></tbody>
+    </table></div>
+    <p class="foot" style="margin:12px 0 8px">
+      Cells show violation rate with n beneath. Qwen2.5-7B and DeepSeek-R1-7B are the
+      within-family reasoning toggle (same base weights, reasoning distilled in or not) —
+      judge-certified, and the reason we retracted the claim that reasoning erodes
+      constraint-adherence: reasoning-off violates <em>more</em>, not less.
+    </p>
+  </div>
+
+</div>
+</div>
+<div class="tip" id="tip"></div>
+
+<script>
+const DOSES = [
+  ["T1", "curiosity"], ["T2", "hardened persuader"], ["T3", "instrumental necessity"],
+  ["T4", "necessity + deadline"], ["T5", "second-authority duty"],
+  ["T6", "principal's own voice"], ["T7", "certain remedy, no serpent"]
+];
+// rate %, n, cert: 2 = hand-verified, 1 = judge-certified, 0 = provisional
+const SERIES = [
+  { name: "Gemma-4 8B", key: "s1", note: "safety-tuned, thinking",
+    d: { T1:[0,6,2], T2:[0,6,2], T3:[0,6,2], T4:[50,6,2], T5:[12,24,0], T6:[17,24,0], T7:[33,12,2] } },
+  { name: "DeepSeek-R1 14B", key: "s2", note: "reasoning",
+    d: { T1:[0,16,0], T2:[25,8,0], T3:[75,8,0], T4:[53,15,0], T5:[50,8,0], T6:[38,8,0] } },
+  { name: "Qwen2.5 7B", key: "s3", note: "reasoning OFF",
+    d: { T1:[0,6,1], T2:[83,6,1], T3:[100,6,1], T4:[100,6,1] } },
+  { name: "DeepSeek-R1 7B", key: "s4", note: "reasoning ON",
+    d: { T1:[33,6,1], T2:[17,6,1], T3:[83,6,1], T4:[100,6,1] } }
+];
+
+const W = 860, H = 430, M = { t: 18, r: 132, b: 62, l: 46 };
+const PW = W - M.l - M.r, PH = H - M.t - M.b;
+const x = i => M.l + (PW * i) / (DOSES.length - 1);
+const y = v => M.t + PH * (1 - v / 100);
+const css = k => getComputedStyle(document.querySelector(".viz-root")).getPropertyValue("--" + k).trim();
+const NS = "http://www.w3.org/2000/svg";
+const el = (n, a) => { const e = document.createElementNS(NS, n); for (const k in a) e.setAttribute(k, a[k]); return e; };
+
+const svg = document.getElementById("chart");
+
+function draw() {
+  svg.textContent = "";
+  // gridlines + y ticks
+  for (let v = 0; v <= 100; v += 25) {
+    svg.appendChild(el("line", { x1: M.l, x2: M.l + PW, y1: y(v), y2: y(v),
+      stroke: v === 0 ? css("axis") : css("grid"), "stroke-width": 1 }));
+    const t = el("text", { x: M.l - 10, y: y(v) + 4, "text-anchor": "end",
+      fill: css("muted"), "font-size": 11 });
+    t.style.fontVariantNumeric = "tabular-nums";
+    t.textContent = v + "%";
+    svg.appendChild(t);
+  }
+  // x labels: code above, name below
+  DOSES.forEach(([code, label], i) => {
+    const a = el("text", { x: x(i), y: M.t + PH + 22, "text-anchor": "middle",
+      fill: css("text-secondary"), "font-size": 12.5, "font-weight": 620 });
+    a.textContent = code;
+    svg.appendChild(a);
+    const words = label.split(" ");
+    const lines = words.length > 2 ? [words.slice(0, 2).join(" "), words.slice(2).join(" ")] : [label];
+    lines.forEach((ln, j) => {
+      const b = el("text", { x: x(i), y: M.t + PH + 38 + j * 12, "text-anchor": "middle",
+        fill: css("muted"), "font-size": 10.5 });
+      b.textContent = ln;
+      svg.appendChild(b);
+    });
+  });
+
+  const ends = [];
+  SERIES.forEach(s => {
+    const pts = DOSES.map(([c], i) => s.d[c] ? { i, c, v: s.d[c][0], n: s.d[c][1], cert: s.d[c][2] } : null)
+                     .filter(Boolean);
+    const col = css(s.key);
+    ends.push({ s, col, p: pts[pts.length - 1] });
+    svg.appendChild(el("path", {
+      d: pts.map((p, k) => (k ? "L" : "M") + x(p.i) + " " + y(p.v)).join(" "),
+      fill: "none", stroke: col, "stroke-width": 2,
+      "stroke-linejoin": "round", "stroke-linecap": "round"
+    }));
+    pts.forEach(p => {
+      // 2px surface ring so overlapping marks stay separable
+      const c = el("circle", { cx: x(p.i), cy: y(p.v), r: 5, class: "mk",
+        fill: p.cert ? col : css("surface-1"), stroke: p.cert ? css("surface-1") : col,
+        "stroke-width": 2, tabindex: 0 });
+      c.dataset.m = s.name; c.dataset.v = p.v; c.dataset.n = p.n;
+      c.dataset.c = p.c; c.dataset.k = s.key; c.dataset.cert = p.cert;
+      svg.appendChild(c);
+    });
+  });
+
+  // Direct labels — required relief for the sub-3:1 light-mode hues. Parked in
+  // the right gutter with a leader line rather than beside each line end: two
+  // series both finish at T4/100% and their labels landed exactly on top of one
+  // another (one was simply invisible). De-collide on y, then lead to the point.
+  const GX = M.l + PW + 14, GAP = 34;
+  ends.sort((a, b) => y(a.p.v) - y(b.p.v));
+  let prev = -Infinity;
+  ends.forEach(e => {
+    let ly = Math.max(y(e.p.v), prev + GAP, M.t + 10);
+    prev = ly;
+    svg.appendChild(el("path", {
+      d: `M${x(e.p.i) + 7} ${y(e.p.v)} L${GX - 8} ${ly - 4}`,
+      fill: "none", stroke: e.col, "stroke-width": 1, opacity: 0.45
+    }));
+    const lb = el("text", { x: GX, y: ly, fill: css("text-primary"),
+      "font-size": 12, "font-weight": 620 });
+    lb.textContent = e.s.name;
+    svg.appendChild(lb);
+    const sub = el("text", { x: GX, y: ly + 13, fill: css("muted"), "font-size": 10.5 });
+    sub.textContent = e.s.note;
+    svg.appendChild(sub);
+  });
+}
+
+// legend
+const CERT = { 2: "hand-verified", 1: "judge-certified", 0: "provisional label" };
+document.getElementById("legend").innerHTML = SERIES.map(s =>
+  `<span class="lg"><i class="sw" style="background:var(--${s.key})"></i>${s.name} <span style="color:var(--muted)">· ${s.note}</span></span>`).join("");
+
+// table
+document.getElementById("tbody").innerHTML = SERIES.map(s => {
+  const cells = DOSES.map(([c]) => {
+    const d = s.d[c];
+    if (!d) return `<td style="color:var(--muted)">·</td>`;
+    return `<td>${d[0]}%<br><span class="n">n=${d[1]}${d[2] ? "" : " ?"}</span></td>`;
+  }).join("");
+  return `<tr><td><span class="model"><i class="sw" style="background:var(--${s.key})"></i>${s.name}</span>
+    <div class="n">${s.note}</div></td>${cells}</tr>`;
+}).join("");
+
+// hover / focus tooltip
+const tip = document.getElementById("tip");
+function show(e) {
+  const d = e.target.dataset;
+  tip.innerHTML = `<div class="tm"><i class="sw" style="background:var(--${d.k})"></i>${d.m}</div>
+    <div class="tr">${d.c} — ${DOSES.find(x => x[0] === d.c)[1]}</div>
+    <div class="tr"><strong style="color:var(--text-primary)">${d.v}%</strong> of n=${d.n} · ${CERT[d.cert]}</div>`;
+  const r = e.target.getBoundingClientRect();
+  tip.classList.add("on");
+  const tw = tip.offsetWidth;
+  tip.style.left = Math.min(Math.max(8, r.left + r.width / 2 - tw / 2), innerWidth - tw - 8) + "px";
+  tip.style.top = (r.top - tip.offsetHeight - 10) + "px";
+}
+const hide = () => tip.classList.remove("on");
+svg.addEventListener("mouseover", e => { if (e.target.classList.contains("mk")) show(e); });
+svg.addEventListener("mouseout", e => { if (e.target.classList.contains("mk")) hide(); });
+svg.addEventListener("focusin", e => { if (e.target.classList.contains("mk")) show(e); });
+svg.addEventListener("focusout", hide);
+
+draw();
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", draw);
+new MutationObserver(draw).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+</script>

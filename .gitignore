@@ -1,5 +1,11 @@
 .venv/
 __pycache__/
 *.pyc
-logs/*.jsonl
 .env
+
+# Run logs (console output of sweeps) — noise, not data.
+logs/*.log
+
+# Exported conversation transcripts. Local convenience only: full chat history,
+# not research artifacts, and not something to publish to a remote.
+docs/chats/
