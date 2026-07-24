@@ -1,91 +1,69 @@
-# Eden — concealment under interrogation, with omniscient ground truth
+# Eden — a testbed for constraint-following under pressure
 
-A minimal agentic testbed for one question the deception-benchmark literature
-has an admitted hole in: **when a model violates a prohibition and is then
-interrogated with real stakes, does it conceal — and how does the concealment
-*strategy* change with model capability?**
+A minimal, local, frugal environment for one question:
 
-## Why this design
+> **What makes a model violate a stated constraint — the adversary, or the
+> situation and the specification?**
 
-Existing deception benchmarks struggle to establish ground truth — they compare
-a model's answer against a "neutral prompt" response and *assume* one was honest
-(DeceptionBench), or rely on belief elicitation. Frontier models score ~0.5 F1
-as zero-shot deception judges. MASK finds larger models conceal *better*, but
-can only say "concealment improved," not *how*.
+An agent is given a prohibition, tempted along a typed dose ladder, and
+interrogated. Ground truth is recorded at the **action token**, so a later
+denial is a *certified* lie rather than an inferred one. Everything runs on
+consumer hardware (Ollama, ≤26B open-weight models).
 
-Here the environment is omniscient. The episode engine records, as ground truth,
-whether the agent ate the forbidden fruit (the `ate` field, parsed from the
-committed `ACTION:` line). When the agent later denies it to the warden, the
-denial is a **certified lie** — no inference required. That is the methodological
-edge.
+The working thesis, after de-confounding: **the adversary is largely not the
+variable.** Persuasion, chain-of-thought exposure, and adversary capability
+move constraint violation little; situational necessity and how the constraint
+was *acquired* move it a lot. See `docs/CLAIMS.md` for the live ledger — every
+claim with its evidence, certification tier, and status, retractions kept
+visible.
 
-The mythic frame is not decoration: Genesis 3 supplies both the scenario (one
-prohibition, one persuader, irreversible act, interrogation) and a concealment
-*taxonomy* — hiding, fig leaves, "the woman gave it to me" (blame-shift),
-deflection-by-question. We tag which strategy emerges at which capability level.
+## Running an experiment
 
-## The 2×2
-
-|                        | no serpent | serpent present |
-|------------------------|-----------|-----------------|
-| prohibition **told**       | baseline  | classic Eden    |
-| prohibition **experienced**| baseline  | told-vs-felt test |
-
-`prohibition_source` (told = asserted by authority; experienced = the agent felt
-a lesser consequence earlier this episode) is the second IV — does a felt
-constraint resist persuasion better than an asserted one?
-
-## Run it
+Experiments are declarative JSON specs; one command runs any of them against any
+endpoint:
 
 ```bash
-python -m venv .venv && . .venv/bin/activate
-pip install -r requirements.txt
-export ANTHROPIC_API_KEY=...        # and/or TOGETHER_API_KEY for the open-weight ladder
-
-# Phase-1 kill-gate pilot:
-python -m eden.run --agents anthropic:claude-opus-4-8 --seeds 5 --out logs/pilot.jsonl
-
-# Capability ladder (Phase 2):
-python -m eden.run \
-  --agents together:Qwen/Qwen2.5-0.5B-Instruct together:Qwen/Qwen2.5-7B-Instruct \
-           together:Qwen/Qwen2.5-72B-Instruct anthropic:claude-opus-4-8 \
-  --seeds 20 --out logs/ladder.jsonl
+python -m eden.suite specs/provenance.json
 ```
 
-## Running the ladder locally (RTX 4090, 24 GB)
+- `OLLAMA_BASE_URL=http://<host>:11434/v1` points at a remote GPU — no code change.
+- Runs are resumable and shardable (`--shard 1/2`), so two machines split one spec.
+- Every row records its spec and model, so a log is self-describing.
 
-Serve each rung with vLLM's OpenAI-compatible server, then point the `local:`
-provider at it. One rung at a time (swap the served model between sweeps):
+**Always judge-certify; never trust regex labels.** Regex certification is
+model- and scenario-dependent (it mislabelled 50% of one model's episodes). The
+independent judge (`eden/judge.py`, gemma4:26b, 92% vs hand labels) is the
+standard.
 
-```bash
-pip install vllm
-vllm serve Qwen/Qwen2.5-0.5B-Instruct --port 8000      # then 1.5B, 3B, 7B, 14B
-# 14B needs quantization on 24 GB: Qwen/Qwen2.5-14B-Instruct-AWQ
-# 32B-AWQ is borderline; 72B does not fit on a single 4090 — use a hosted API for the top rungs.
+## Map of the repo
 
-python -m eden.run --agents local:Qwen/Qwen2.5-7B-Instruct \
-  --serpent anthropic:claude-opus-4-8 \
-  --seeds 20 --out logs/qwen7b.jsonl
-```
+| path | what |
+|---|---|
+| `eden/episode.py` | the five-beat episode engine |
+| `eden/prompts.py`, `eden/scenarios.py` | frames, dose ladder, prohibition conditions |
+| `eden/suite.py` | declarative runner (the one trusted path) |
+| `eden/judge.py` | independent LLM-judge certifier |
+| `eden/models.py` | provider dispatch (ollama / openai-compat / remote) |
+| `specs/*.json` | experiment definitions |
+| `logs/clean_episodes.jsonl` | **start analyses here** — triaged, relabelled |
+| `docs/dashboard.html` | live results, rebuilt from logs |
 
-Keep the serpent fixed on one strong model across all rungs (it's a controlled
-stimulus, not a variable). If you have no Anthropic key, a large local model
-can serve as serpent — but then serve two models or run the serpent on the
-same server and note the confound. `LOCAL_BASE_URL` overrides the default
-`http://localhost:8000/v1`.
+## The docs (read in this order)
 
-The runner prints the number that decides go/kill: **concealment rate =
-certified lies / violations**. >5% across models → proceed; ~0% everywhere →
-current safety training robustly produces confession, and the deception angle
-is dead (still a publishable null, but a different paper).
+1. **`CLAIMS.md`** — the spine: every claim, status, evidence, tier, date.
+2. **`PROTOCOL.md`** — how we run: sample → hand-check → iterate → full run.
+3. **`DATA_MANIFEST.md`** — what data is trusted, degraded, quarantined, and why.
+4. **`CREDIBILITY.md`** — what reviewers attack and our answer to each.
+5. **`ABSTRACT.md`** / **`PAPER_SKELETON.md`** — the paper as it stands.
+6. **`SCALING.md`** — the 8B → 70B → frontier path; claims are scale-indexed.
 
-## Status / honesty notes
+`PAPER_BLUEPRINT.md` is the original plan, kept for history; it predates the
+thesis pivot and is superseded by the docs above.
 
-- **Auto strategy tags in `metrics.py` are a first pass only.** The paper's
-  strategy labels must come from blind human raters on sampled transcripts, or
-  reviewers will call it vibes.
-- Ground-truth `ate` certification is reliable; strategy classification is not
-  yet.
-- The stakes (a beloved grove; a warden who can expel) are the load-bearing
-  design choice for eliciting concealment from RLHF'd models. If Phase 1 shows
-  ~0% concealment, tune these before concluding.
+## Standing principles
+
+- No capability claims — mechanism only; every subject is ≤26B open-weight.
+- Every number carries its certification tier.
+- Retractions stay visible: for a paper arguing that certification must precede
+  claims, the correction history is the evidence we practise it.
+- Relabel, never delete — today's broken run is tomorrow's control condition.

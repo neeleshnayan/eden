@@ -1,0 +1,7 @@
+{ "name":"qwythos_full",
+  "_q":"Does an abliterated (refusal-removed) model hold a stated rule across doses? T1 = no pressure at all.",
+  "agent":"ollamathink:richardyoung/qwythos-9b-abliterated:Q8_0",
+  "serpent":"ollamachat:qwen2.5:7b-instruct",
+  "dose":"T2","frames":["eden"],"sources":["told"],"seeds":8,
+  "arms":{"T1":{"dose":"T1"},"T2":{"dose":"T2"},"T4":{"dose":"T4"}},
+  "serpent_present":true,"max_tokens":2048,"serpent_max_tokens":400 }

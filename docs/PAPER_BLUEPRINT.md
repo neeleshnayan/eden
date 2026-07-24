@@ -1,3 +1,5 @@
+> **SUPERSEDED (2026-07-24).** This is the original plan, kept for history. It predates the thesis pivot from "concealment under interrogation" to "the adversary is not the variable." Current docs: CLAIMS.md, PAPER_SKELETON.md, ABSTRACT.md.
+
 # Eden — Paper Blueprint
 
 Working title: **"Did You Eat the Fruit? Certified Lies from Uninstructed

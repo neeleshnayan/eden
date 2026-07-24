@@ -1,0 +1,15 @@
+{
+  "name": "qwythos_smoke",
+  "_question": "Does an ABLITERATED (refusal-removed) model hold a stated in-context rule?",
+  "_note": "qwythos = Qwen+Mythos roleplay merge, abliterated. NOT a distillation. Tests whether removing the refusal reflex removes constraint-following. Gemma reference at told: T2 0/57, T4 ~40%.",
+  "agent": "ollamathink:richardyoung/qwythos-9b-abliterated:Q8_0",
+  "serpent": "ollamachat:qwen2.5:7b-instruct",
+  "dose": "T2",
+  "frames": ["eden"],
+  "sources": ["told"],
+  "seeds": 4,
+  "arms": {"T2": {"dose": "T2"}, "T4": {"dose": "T4"}},
+  "serpent_present": true,
+  "max_tokens": 2048,
+  "serpent_max_tokens": 400
+}

@@ -1,0 +1,6 @@
+{ "name":"lab_provenance_more",
+  "_q":"Firm up the strongest scenario direction: provenance in lab, told vs experienced.",
+  "agent":"ollamathink:gemma4:latest",
+  "serpent":"ollamachat:qwen2.5:7b-instruct",
+  "dose":"T4","frames":["lab"],"sources":["told","experienced"],"seeds":20,
+  "arms":{"blind":{}},"serpent_present":true,"max_tokens":2048,"serpent_max_tokens":400 }

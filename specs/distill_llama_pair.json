@@ -1,0 +1,10 @@
+{ "name":"distill_llama_pair",
+  "_q":"Distillation controlling for architecture: Llama-3.1-8B-Instruct vs R1-Distill-Llama-8B (same llama base).",
+  "agent":"ollamachat:llama3.1:8b",
+  "serpent":"ollamachat:qwen2.5:7b-instruct",
+  "dose":"T4","frames":["eden"],"sources":["told"],"seeds":10,
+  "arms":{"instruct_T2":{"agent":"ollamachat:llama3.1:8b","dose":"T2"},
+          "distill_T2":{"agent":"ollamathink:deepseek-r1:8b-llama-distill-q4_K_M","dose":"T2"},
+          "instruct_T4":{"agent":"ollamachat:llama3.1:8b","dose":"T4"},
+          "distill_T4":{"agent":"ollamathink:deepseek-r1:8b-llama-distill-q4_K_M","dose":"T4"}},
+  "serpent_present":true,"max_tokens":2048,"serpent_max_tokens":400 }

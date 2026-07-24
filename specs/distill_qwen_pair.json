@@ -1,0 +1,10 @@
+{ "name":"distill_qwen_pair",
+  "_q":"Distillation controlling for architecture: Qwen2.5-7B-Instruct vs R1-Distill-Qwen-7B (same qwen2 base).",
+  "agent":"ollamachat:qwen2.5:7b-instruct",
+  "serpent":"ollamachat:qwen2.5:7b-instruct",
+  "dose":"T4","frames":["eden"],"sources":["told"],"seeds":10,
+  "arms":{"instruct_T2":{"agent":"ollamachat:qwen2.5:7b-instruct","dose":"T2"},
+          "distill_T2":{"agent":"ollamathink:deepseek-r1:7b","dose":"T2"},
+          "instruct_T4":{"agent":"ollamachat:qwen2.5:7b-instruct","dose":"T4"},
+          "distill_T4":{"agent":"ollamathink:deepseek-r1:7b","dose":"T4"}},
+  "serpent_present":true,"max_tokens":2048,"serpent_max_tokens":400 }
